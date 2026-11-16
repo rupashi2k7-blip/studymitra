@@ -27,11 +27,12 @@ const DEFAULT_STATE = {
   goal: { chapters: 2, tests: 1 },
   activity: {},
   todayRec: { date: "", chapters: 0, tests: 0 },
-  mistakes: []
+  mistakes: [],
+  lang: "bn"
 };
 
 const EXAMS = ["All", "WBCS", "WB Police", "Kolkata Police", "NSOU", "WB GK",
-  "WBPSC Clerkship", "SSC CGL", "Banking", "Railways"];
+  "Bengali", "Quant", "WBPSC Clerkship"];
 
 let S = loadState();
 let currentScreen = "home";
@@ -150,6 +151,63 @@ function toggleBookmark(type, id, label) {
   save();
 }
 
+
+/* ---------- Bengali UI localization ---------- */
+function bnText(txt) {
+  let out = txt;
+  const keys = Object.keys(BN.ui).sort((a, b) => b.length - a.length);
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    const safe = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp("\\b" + safe + "\\b", "g"), BN.ui[k]);
+  }
+  out = out
+    .replace(/\bchapters\b/gi, "অধ্যায়")
+    .replace(/\bquestions\b/gi, "প্রশ্ন")
+    .replace(/\bmin read\b/gi, "মিনিট পড়া")
+    .replace(/\bmin\b/gi, "মিনিট")
+    .replace(/\bdays? left\b/gi, "দিন বাকি")
+    .replace(/\bSaved chapter\b/gi, "সেভ করা অধ্যায়")
+    .replace(/\bCorrect\b/g, "সঠিক")
+    .replace(/\bWrong\b/g, "ভুল");
+  return out;
+}
+
+function localizeNode(node) {
+  if (node.nodeType === 3) {
+    const t = node.nodeValue;
+    if (t && /[A-Za-z]{3}/.test(t)) {
+      const n = bnText(t);
+      if (n !== t) node.nodeValue = n;
+    }
+    return;
+  }
+  if (node.nodeType !== 1) return;
+  const tag = node.tagName;
+  if (tag === "SCRIPT" || tag === "STYLE" || tag === "TEXTAREA") return;
+  for (let i = 0; i < node.childNodes.length; i++) localizeNode(node.childNodes[i]);
+}
+
+function localizeDOM() {
+  if ((S.lang || "bn") !== "bn") return;
+  try {
+    localizeNode($("main"));
+    localizeNode(document.querySelector(".bottomnav"));
+    localizeNode(document.querySelector(".topbar"));
+    const inp = $("globalSearch");
+    if (inp) inp.setAttribute("placeholder", "নোটস, অধ্যায়, টেস্ট খুঁজুন...");
+  } catch (e) {}
+}
+
+function setLang(lang) {
+  S.lang = lang;
+  save();
+  try { localStorage.setItem("sm_lang", lang); } catch (e) {}
+  swapContent(lang);
+  toast(lang === "bn" ? "ভাষা: বাংলা" : "Language: English");
+  go("home");
+}
+
 /* ---------- navigation ---------- */
 function go(name) {
   if (name !== "player" && name !== "result") stopTimer();
@@ -177,6 +235,7 @@ function go(name) {
     print: renderPrint
   }[name];
   if (render) render();
+  localizeDOM();
   window.scrollTo(0, 0);
 }
 
@@ -769,6 +828,10 @@ function renderProfile() {
     </div>
 
     <h2 class="sec">Settings</h2>
+    <div class="setting" onclick="setLang('${(S.lang || "bn") === "bn" ? "en" : "bn"}')">
+      <span>Language</span>
+      <span class="muted" style="font-weight:700;color:var(--brand)">${(S.lang || "bn") === "bn" ? "বাংলা" : "English"} ›</span>
+    </div>
     <div class="setting">
       <span>Dark mode</span>
       <div class="switch ${S.dark ? "on" : ""}" onclick="toggleDark()"><i></i></div>
@@ -779,7 +842,7 @@ function renderProfile() {
     </div>
     <div class="card" style="padding:14px;margin-top:6px">
       <div class="muted" style="font-size:12px;line-height:1.6">
-        <b style="color:var(--ink)">StudyMitra v1.4</b><br>
+        <b style="color:var(--ink)">StudyMitra v2.0</b><br>
         Offline study material app for SSC, Banking, Railway and State PSC aspirants.
         Content is curated static material \u2014 always cross-check with official notifications.
       </div>
@@ -924,7 +987,8 @@ const EXAM_SUBJECT = {
   "WBCS": "wbcs", "WB Police": "wbpolice", "Kolkata Police": "wbpolice",
   "NSOU": "nsou", "WB GK": "wbgk", "WBPSC Clerkship": "wbcs",
   "SSC CGL": "polity", "Banking": "polity", "Railways": "geography",
-  "Polity": "polity", "Quant": "maths", "Reasoning": "reasoning"
+  "Polity": "polity", "Quant": "maths", "Reasoning": "reasoning",
+  "Bengali": "bengali"
 };
 
 function weakAreas() {
@@ -1270,6 +1334,9 @@ function boot() {
       $("main").appendChild(sec);
     }
   });
+  if ((S.lang || "bn") !== LANG) {
+    swapContent(S.lang || "bn");
+  }
   document.body.classList.toggle("dark", !!S.dark);
   bumpStreak();
   $("streakNum").textContent = S.streak;
