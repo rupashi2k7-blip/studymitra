@@ -1197,3 +1197,54 @@ const FLASHCARDS = [
   { q: "Universal donor blood group?", a: "O negative", tag: "Science" },
   { q: "Baking soda chemical name?", a: "Sodium bicarbonate, NaHCO\u2083", tag: "Science" }
 ];
+
+/* ============ v1.4 : NSOU programme-wise chapters ============ */
+
+SUBJECTS.filter(s => s.id === "nsou")[0].chapters.push(
+  {
+    id: "ns5",
+    title: "Education \u2013 Core Concepts",
+    mins: 6,
+    body: `
+      <ul>
+        <li><b>Education</b> \u2013 the deliberate, systematic process of developing a person's knowledge, skills and character. <b>Instruction</b> is narrower; <b>schooling</b> is the institutional form.</li>
+        <li><b>Aims of education</b>: individual development, social efficiency, citizenship, vocational competence and character formation.</li>
+        <li><b>Functions of education</b>: transmission of culture, socialisation, social mobility, and economic development.</li>
+        <li><b>Educational psychology</b> \u2013 Piaget (cognitive stages: sensorimotor, pre-operational, concrete operational, formal operational), Vygotsky (zone of proximal development, scaffolding), Kohlberg (moral development).</li>
+        <li><b>Learning theories</b>: behaviourism (Pavlov, Skinner \u2013 conditioning and reinforcement), cognitivism (Gestalt, Bruner \u2013 discovery learning), constructivism (Piaget, Vygotsky).</li>
+        <li><b>Teaching aids</b> and the <b>teaching-learning process</b>; continuous and comprehensive evaluation; inclusive education.</li>
+        <li><b>Indian education commissions</b>: Kothari Commission (1964\u201366, 10+2+3 pattern), Mudaliar Commission (secondary education), Radhakrishnan Commission (university education), NEP 2020 (5+3+3+4 structure).</li>
+      </ul>
+      <div class="tip"><b>Answer tip:</b> in NSOU education papers, always name the thinker, the stage or the year \u2014 a bare definition rarely gets full marks.</div>`
+  },
+  {
+    id: "ns6",
+    title: "Bengali Literature \u2013 Basics",
+    mins: 6,
+    body: `
+      <ul>
+        <li><b>Early period</b>: Charyapada (oldest surviving Bengali texts), Mangalkavya, Vaishnava padavali.</li>
+        <li><b>Nineteenth century</b>: Michael Madhusudan Dutt (<i>Meghnad Badh Kavya</i>), Bankim Chandra Chatterjee (<i>Durgeshnandini</i>, <i>Kapalkundala</i>, <i>Anandamath</i>), Rabindranath Tagore (<i>Gitanjali</i>, <i>Gora</i>, <i>Ghare Baire</i>).</li>
+        <li><b>Tagore's contribution</b>: Nobel Prize in Literature 1913 for <i>Gitanjali</i>; Santiniketan and Visva-Bharati; songs now known as Rabindra Sangeet.</li>
+        <li><b>Kazi Nazrul Islam</b> \u2013 the national poet of Bangladesh, known as the rebel poet (<i>Bidrohi</i>).</li>
+        <li><b>Sarat Chandra Chattopadhyay</b> \u2013 <i>Devdas</i>, <i>Pather Dabi</i>, <i>Srikanta</i>; <b>Bibhutibhushan Bandyopadhyay</b> \u2013 <i>Pather Panchali</i>, <i>Aranyak</i>.</li>
+        <li><b>Post-independence</b>: Jibanananda Das (poetry, <i>Banalata Sen</i>), Mahasweta Devi (fiction and social criticism), Sunil Gangopadhyay, Shakti Chattopadhyay.</li>
+        <li><b>Literary terms</b>: kabita (poem), galpo (short story), uponyas (novel), natok (drama), probondho (essay).</li>
+      </ul>`
+  },
+  {
+    id: "ns7",
+    title: "Unit-wise Study Plan",
+    mins: 5,
+    body: `
+      <ul>
+        <li>Open the <b>SLM</b> for the paper and write down the unit titles on one page \u2014 that page becomes your syllabus tracker.</li>
+        <li>Plan <b>one unit per week</b> per paper: read the unit, make a one-page summary, then attempt the assignment question for that unit.</li>
+        <li>Keep the <b>assignment questions</b> beside you while reading \u2014 you read more sharply when a question is in front of you.</li>
+        <li>For each unit, note 2 dates, 2 names and 2 definitions. That is usually enough to write a full answer.</li>
+        <li>Revise only from your summaries in the last two weeks before the TEE; do not re-read the whole SLM.</li>
+        <li>Use the <b>My note</b> box under each chapter in this app to store your summary \u2014 it stays on your phone.</li>
+      </ul>
+      <div class="kv"><b>Time budget:</b> two papers \u00D7 one unit a week is comfortable for a six-month cycle. Add one practice answer a week to stay in writing rhythm.</div>`
+  }
+);

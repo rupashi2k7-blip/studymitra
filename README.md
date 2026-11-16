@@ -10,7 +10,7 @@ An **offline study-material app** for West Bengal and central government exams �
 
 | Section | Content |
 |---|---|
-| **Notes** | 11 subjects · 40 chapters — West Bengal GK, WBPSC/WBCS, WB Police & Kolkata Police, NSOU guide, plus Indian Polity, History, Geography, Science, Quant, Reasoning and English |
+| **Notes** | 11 subjects · 43 chapters — West Bengal GK, WBPSC/WBCS, WB Police & Kolkata Police, NSOU guide, plus Indian Polity, History, Geography, Science, Quant, Reasoning and English |
 | **PYQ & mock tests** | 13 test sets · 135 MCQs (incl. a 25-question full-length WB Police mock) — WBCS prelims, WB Police, Kolkata Police, WB GK, NSOU BDP, WBPSC Clerkship, SSC, Banking and Railways, with timer, palette, negative marking and full solutions |
 | **PDF packs** | 5 printable packs (WB GK, WBCS PYQ solved, police guide, all-PYQ booklet, NSOU guide) with **Save as PDF** through the Android print sheet — works fully offline |
 | **Daily quiz** | 5 fresh mixed questions every day, keeps your streak alive |
@@ -18,6 +18,8 @@ An **offline study-material app** for West Bengal and central government exams �
 | **Library** | Bookmark chapters, track chapters read, accuracy and best score |
 | **Revise tab** | 42 flashcards with a "known" counter, weak-area analysis from your test history, exam countdown |
 | **Planner** | Daily target (chapters + tests), today's progress ring and a last-7-days activity strip |
+| **Mistake book** | Every question you attempt and get wrong is saved; retry up to 10 of them and each one leaves the book once you answer it right |
+| **Random practice** | 10 mixed questions drawn from the whole app, no negative marking |
 | **My notes** | Write your own notes under any chapter; they are saved on the device and listed under Notes |
 | **Extras** | Global search, dark mode, editable profile, progress saved on the device |
 
@@ -25,7 +27,7 @@ An **offline study-material app** for West Bengal and central government exams �
 
 - **100% offline** — every note, question and explanation ships inside the APK. Nothing is fetched from a server.
 - **Exam-style test player** — countdown timer, per-question palette, mark-and-move, submit-early confirmation, **negative marking** (0.25 / 0.33 per wrong answer, as in the real papers), and a solutions screen with an explanation for every question.
-- **Save as PDF** — every pack opens a print-ready sheet; the Android print dialog saves it as a PDF file you can share on WhatsApp or email.
+- **Save as PDF** — every pack, and every test result, opens a print-ready sheet; the Android print dialog saves it as a PDF file you can share on WhatsApp or email.
 - **Progress that persists** — streak, chapters read, test history and bookmarks are stored in local storage on the phone.
 - **Tiny and fast** — the UI is a single hand-written HTML/CSS/JS bundle rendered inside a native `WebView`; no frameworks, no AndroidX, no Gradle dependencies.
 - **Dark mode** for night revision.

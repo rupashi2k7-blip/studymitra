@@ -26,7 +26,8 @@ const DEFAULT_STATE = {
   exams: [],
   goal: { chapters: 2, tests: 1 },
   activity: {},
-  todayRec: { date: "", chapters: 0, tests: 0 }
+  todayRec: { date: "", chapters: 0, tests: 0 },
+  mistakes: []
 };
 
 const EXAMS = ["All", "WBCS", "WB Police", "Kolkata Police", "NSOU", "WB GK",
@@ -260,7 +261,7 @@ function renderHome() {
     <div class="quick">
       <div class="qa" onclick="go('notes')"><div class="ic o">\uD83D\uDCD8</div><span>Study notes</span></div>
       <div class="qa" onclick="go('tests')"><div class="ic b">\uD83D\uDCDD</div><span>Mock tests</span></div>
-      <div class="qa" onclick="go('pdf')"><div class="ic g">\uD83D\uDCC4</div><span>PDF packs</span></div>
+      <div class="qa" onclick="startRandom()"><div class="ic g">\u21BB</div><span>Random 10</span></div>
       <div class="qa" onclick="go('gk')"><div class="ic p">\uD83C\uDF10</div><span>GK zone</span></div>
     </div>
 
@@ -442,6 +443,16 @@ function renderTests() {
       ${EXAMS.map(e => `<div class="chip ${S.exam === e ? "on" : ""}" onclick="pickExam('${e}')">${e}</div>`).join("")}
     </div>
     <div class="list" style="margin-top:8px">
+      <div class="item" onclick="startRandom()">
+        <div class="badge" style="background:rgba(29,78,216,.12);color:#1D4ED8">\u21BB</div>
+        <div class="txt"><b>Random practice \u2014 10 questions</b><small>Poori app se mixed questions, no negative marking</small></div>
+        <div class="arrow">\u203A</div>
+      </div>
+      <div class="item" onclick="startMistakes()">
+        <div class="badge" style="background:rgba(224,36,36,.1);color:#E02424">${(S.mistakes || []).length}</div>
+        <div class="txt"><b>Mistake book \u2014 retry</b><small>${(S.mistakes || []).length ? "Galat kiye gaye sawaal dobara attempt karein" : "Test dene ke baad galat sawaal yahan aayenge"}</small></div>
+        <div class="arrow">\u203A</div>
+      </div>
       ${(list.length ? list : []).map(t => `
         <div class="item" onclick="startTest('${t.id}')">
           <div class="badge">\uD83C\uDFAF</div>
@@ -608,6 +619,7 @@ function submitTest() {
     total: player.questions.length,
     date: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear()
   });
+  recordMistakes(player);
   logActivity("test");
   go("result");
 }
@@ -662,6 +674,7 @@ function renderResult() {
       <button class="btn btn-soft" onclick="go('tests')">Back to tests</button>
       <button class="btn btn-primary" onclick="retry()">Retry test</button>
     </div>
+    <button class="btn btn-outline btn-block" style="margin-top:10px" onclick="printResult()">Save result as PDF</button>
     <div style="height:8px"></div>
   `;
 }
@@ -766,7 +779,7 @@ function renderProfile() {
     </div>
     <div class="card" style="padding:14px;margin-top:6px">
       <div class="muted" style="font-size:12px;line-height:1.6">
-        <b style="color:var(--ink)">StudyMitra v1.3</b><br>
+        <b style="color:var(--ink)">StudyMitra v1.4</b><br>
         Offline study material app for SSC, Banking, Railway and State PSC aspirants.
         Content is curated static material \u2014 always cross-check with official notifications.
       </div>
@@ -869,6 +882,14 @@ function renderRevise() {
 
     <h2 class="sec">Exam countdown <span class="link" onclick="addExam()">+ Add exam</span></h2>
     ${examListHTML()}
+
+    <h2 class="sec">Mistake book <span class="link" onclick="clearMistakes()">Clear</span></h2>
+    <div class="item" onclick="startMistakes()">
+      <div class="badge" style="background:rgba(224,36,36,.1);color:#E02424">${(S.mistakes || []).length}</div>
+      <div class="txt"><b>${(S.mistakes || []).length ? "Retry " + Math.min(10, (S.mistakes || []).length) + " mistakes" : "No mistakes saved"}</b>
+        <small>Har test ke galat aur chhode gaye sawaal yahan jama hote hain</small></div>
+      <div class="arrow">\u203A</div>
+    </div>
 
     <h2 class="sec">Quick GK revision</h2>
     <div class="item" onclick="go('gk')">
@@ -995,6 +1016,130 @@ function myNotesHTML() {
   }).join("")}</div>`;
 }
 
+
+/* ---------- MISTAKE BOOK + RANDOM PRACTICE ---------- */
+function recordMistakes(p) {
+  if (!S.mistakes) S.mistakes = [];
+  const keep = new Set();
+
+  if (p.id === "mistakes") {
+    // rebuild: keep wrong ones, drop the ones now answered correctly
+    const still = [];
+    p.questions.forEach((q, i) => {
+      if (p.answers[i] !== q.a && q.__ref) still.push(q.__ref);   // still wrong or skipped
+    });
+    S.mistakes = still;
+    save();
+    return;
+  }
+
+  p.questions.forEach((q, i) => {
+    // only questions the user actually attempted and got wrong
+    if (p.answers[i] !== null && p.answers[i] !== q.a) keep.add(i);
+  });
+  keep.forEach(i => {
+    const ref = { testId: p.id, qi: i };
+    const dup = S.mistakes.some(m => m.testId === ref.testId && m.qi === ref.qi);
+    if (!dup) S.mistakes.push(ref);
+  });
+  if (S.mistakes.length > 300) S.mistakes = S.mistakes.slice(-300);
+  save();
+}
+
+function resolveMistake(ref) {
+  const t = findTest(ref.testId);
+  if (!t || !t.questions[ref.qi]) return null;
+  const q = t.questions[ref.qi];
+  return { q: q.q, o: q.o, a: q.a, e: q.e, __ref: ref };
+}
+
+function mistakeQuestions() {
+  const out = [];
+  (S.mistakes || []).forEach(r => {
+    const q = resolveMistake(r);
+    if (q) out.push(q);
+  });
+  return out;
+}
+
+function startMistakes() {
+  const qs = mistakeQuestions();
+  if (!qs.length) { toast("Abhi koi mistake saved nahi hai"); return; }
+  beginSession({
+    id: "mistakes",
+    title: "Mistake Book \u2014 retry " + Math.min(10, qs.length),
+    mins: Math.max(5, Math.min(10, qs.length)),
+    neg: 0,
+    questions: qs.slice(0, 10)
+  });
+}
+
+function clearMistakes() {
+  if (!confirm("Clear the whole mistake book?")) return;
+  S.mistakes = [];
+  save();
+  renderRevise();
+  toast("Mistake book cleared");
+}
+
+function startRandom() {
+  const pool = [];
+  TESTS.forEach(t => t.questions.forEach(q => pool.push({ q: q.q, o: q.o, a: q.a, e: q.e })));
+  DAILY_POOL.forEach(q => pool.push({ q: q.q, o: q.o, a: q.a, e: q.e }));
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  beginSession({
+    id: "random",
+    title: "Random Practice \u2014 10 questions",
+    mins: 10,
+    neg: 0,
+    questions: pool.slice(0, 10)
+  });
+}
+
+/* ---------- RESULT AS PDF ---------- */
+let customPrintHTML = "";
+
+function printResult() {
+  if (!player) return;
+  const total = player.questions.length;
+  let score = 0, skipped = 0, wrong = 0;
+  player.questions.forEach((q, i) => {
+    if (player.answers[i] === q.a) score++;
+    else if (player.answers[i] === null) skipped++;
+    else wrong++;
+  });
+  const marks = Math.round((score - wrong * (player.neg || 0)) * 100) / 100;
+  const letters = ["A", "B", "C", "D"];
+  const d = new Date();
+
+  let html = `<h1 style="font-size:21px;margin:0 0 4px">${esc(player.title)}</h1>
+    <div class="muted" style="margin-bottom:16px">${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} \u00B7 StudyMitra score card</div>
+    <div class="kv"><b>Score:</b> ${score} / ${total} correct \u00B7 <b>Wrong:</b> ${wrong} \u00B7 <b>Skipped:</b> ${skipped}
+    ${player.neg ? " \u00B7 <b>Marks after negative marking:</b> " + marks : ""}</div>`;
+
+  player.questions.forEach((q, i) => {
+    const picked = player.answers[i];
+    const ok = picked === q.a;
+    html += `<div style="margin-bottom:16px;page-break-inside:avoid">
+      <div style="font-size:13px;font-weight:700;color:${picked === null ? "#8A93A6" : ok ? "#0E9F6E" : "#E02424"};margin-bottom:4px">
+        Q${i + 1} \u00B7 ${picked === null ? "Skipped" : ok ? "Correct" : "Wrong"}</div>
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:6px">${esc(q.q)}</div>
+      ${q.o.map((o, j) => `<div style="font-size:13px;color:${j === q.a ? "#0E9F6E" : "var(--ink-2)"};margin-bottom:3px">
+        <b>${letters[j]}.</b> ${esc(o)}${j === q.a ? "  \u2713" : ""}</div>`).join("")}
+      <div class="exp" style="margin-top:8px"><b>Explanation:</b> ${esc(q.e)}</div>
+    </div>`;
+  });
+
+  html += `<div class="divider"></div>
+    <div class="muted" style="font-size:11.5px">Generated by StudyMitra. Questions are practice material; verify exam patterns with the official notification.</div>`;
+
+  customPrintHTML = html;
+  go("print");
+}
+
 /* ---------- PDF LIBRARY ---------- */
 function renderPDF() {
   $("screen-pdf").innerHTML = `
@@ -1066,6 +1211,23 @@ function buildPackHTML(p) {
 }
 
 function renderPrint() {
+  if (customPrintHTML) {
+    const html = customPrintHTML;
+    customPrintHTML = "";
+    $("screen-print").innerHTML = `
+      <div class="noprint rowline" style="margin-bottom:12px">
+        <button class="btn btn-soft" onclick="go('result')">\u2039 Result</button>
+        <button class="btn btn-primary" onclick="doPrint()">Save as PDF</button>
+      </div>
+      <div class="card" style="padding:16px">${html}</div>
+      <div class="noprint" style="margin:14px 0">
+        <button class="btn btn-outline btn-block" onclick="doPrint()">Save as PDF / Print</button>
+      </div>
+      <div style="height:8px"></div>
+    `;
+    window.scrollTo(0, 0);
+    return;
+  }
   if (!currentPack) { go("pdf"); return; }
   $("screen-print").innerHTML = `
     <div class="noprint rowline" style="margin-bottom:12px">
