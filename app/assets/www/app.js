@@ -20,7 +20,13 @@ const DEFAULT_STATE = {
   bookmarks: [],
   results: [],
   dark: false,
-  exam: "All"
+  exam: "All",
+  notes: {},
+  known: [],
+  exams: [],
+  goal: { chapters: 2, tests: 1 },
+  activity: {},
+  todayRec: { date: "", chapters: 0, tests: 0 }
 };
 
 const EXAMS = ["All", "WBCS", "WB Police", "Kolkata Police", "NSOU", "WB GK",
@@ -56,6 +62,47 @@ function bumpStreak() {
     S.lastDay = t;
     save();
   }
+}
+
+/* ---------- activity + goals ---------- */
+function dayKey(d) {
+  d = d || new Date();
+  return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+}
+function todayRec() {
+  const k = dayKey();
+  if (!S.todayRec || S.todayRec.date !== k) {
+    S.todayRec = { date: k, chapters: 0, tests: 0 };
+  }
+  return S.todayRec;
+}
+function logActivity(kind) {
+  const k = dayKey();
+  const rec = todayRec();
+  S.activity[k] = (S.activity[k] || 0) + 1;
+  if (kind === "chapter") rec.chapters++;
+  else rec.tests++;
+  save();
+}
+function weekStrip() {
+  const names = ["S", "M", "T", "W", "T", "F", "S"];
+  let out = "";
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const k = dayKey(d);
+    const n = S.activity[k] || 0;
+    out += `<div class="day"><div class="dot ${n ? "on" : ""}">${n ? n : ""}</div><small>${names[d.getDay()]}</small></div>`;
+  }
+  return `<div class="week">${out}</div>`;
+}
+function upcomingExams() {
+  const t0 = new Date();
+  t0.setHours(0, 0, 0, 0);
+  return (S.exams || []).map(e => ({
+    name: e.name,
+    date: e.date,
+    days: Math.ceil((new Date(e.date + "T00:00:00") - t0) / 86400000)
+  })).sort((a, b) => a.days - b.days);
 }
 
 /* ---------- helpers ---------- */
@@ -124,6 +171,7 @@ function go(name) {
     player: renderPlayer,
     result: renderResult,
     search: renderSearch,
+    revise: renderRevise,
     pdf: renderPDF,
     print: renderPrint
   }[name];
@@ -132,6 +180,30 @@ function go(name) {
 }
 
 /* ---------- HOME ---------- */
+function goalPct() {
+  const g = S.goal || { chapters: 2, tests: 1 };
+  const rec = todayRec();
+  const a = Math.min(1, rec.chapters / Math.max(1, g.chapters));
+  const b = Math.min(1, rec.tests / Math.max(1, g.tests));
+  return Math.round(((a + b) / 2) * 100);
+}
+function countdownCard() {
+  const up = upcomingExams().filter(e => e.days >= 0)[0];
+  if (!up) {
+    return `<div class="item" onclick="go('revise')" style="margin-top:12px">
+      <div class="badge">\u23F3</div>
+      <div class="txt"><b>Add your exam date</b><small>Countdown dikhega yahan \u2014 Revise tab me</small></div>
+      <div class="arrow">\u203A</div>
+    </div>`;
+  }
+  return `<div class="hero" style="margin-top:12px;background:linear-gradient(120deg,#0E9F6E,#22C55E)">
+    <h3>${esc(up.name)}</h3>
+    <p>${up.days === 0 ? "Exam aaj hai \u2014 best of luck!" : up.days + " days left \u00B7 " + up.date}</p>
+    <div class="row"><button class="btn btn-ghost" onclick="go('tests')">Take a mock</button>
+    <button class="btn btn-ghost" onclick="go('revise')">Revise cards</button></div>
+  </div>`;
+}
+
 function renderHome() {
   bumpStreak();
   const last = S.read.length ? findChapter(S.read[S.read.length - 1]) : null;
@@ -165,6 +237,25 @@ function renderHome() {
       <div class="stat"><b>${S.results.length}</b><small>Tests taken</small></div>
       <div class="stat"><b>${accuracy()}%</b><small>Accuracy</small></div>
     </div>
+
+    <div class="card" style="padding:14px;margin-top:12px">
+      <div class="rowline">
+        <div>
+          <b style="font-size:13.5px">Today's goal</b>
+          <div class="muted" style="margin-top:2px">
+            ${todayRec().chapters}/${S.goal.chapters} chapters \u00B7 ${todayRec().tests}/${S.goal.tests} tests
+          </div>
+        </div>
+        <div class="ring" style="background:conic-gradient(var(--brand) ${goalPct()}%, var(--line) 0deg)">
+          <i>${goalPct()}%</i>
+        </div>
+      </div>
+      <div class="divider" style="margin:12px 0 10px"></div>
+      <div class="muted" style="font-size:11px;margin-bottom:6px">Last 7 days</div>
+      ${weekStrip()}
+    </div>
+
+    ${countdownCard()}
 
     <div class="quick">
       <div class="qa" onclick="go('notes')"><div class="ic o">\uD83D\uDCD8</div><span>Study notes</span></div>
@@ -252,6 +343,8 @@ function renderNotes() {
           <div class="arrow">\u203A</div>
         </div>`).join("")}
     </div>
+    <h2 class="sec">My notes</h2>
+    ${myNotesHTML()}
     <h2 class="sec">Saved by you</h2>
     ${savedNotesHTML()}
     <div style="height:8px"></div>
@@ -302,6 +395,7 @@ function openChapter(id) {
   if (!f) return;
   activeChapter = id;
   if (S.read.indexOf(id) === -1) { S.read.push(id); save(); }
+  logActivity("chapter");
   go("chapter");
 }
 
@@ -325,6 +419,11 @@ function renderChapter() {
       <small>${esc(f.sub.name)} \u00B7 ${f.ch.mins} min read \u00B7 Chapter ${idx + 1} of ${list.length}</small>
     </div>
     <div class="notebody">${f.ch.body}</div>
+
+    <h3 style="font-size:14px;margin:18px 0 8px">My note</h3>
+    <textarea class="mynote" id="noteBox" placeholder="Apne points likhein \u2014 yeh sirf aapke phone me save honge">${esc(S.notes[f.ch.id] || "")}</textarea>
+    <button class="btn btn-soft btn-block" style="margin-top:8px" onclick="saveNote('${f.ch.id}')">Save note</button>
+
     <div class="divider"></div>
     ${next
       ? `<button class="btn btn-primary btn-block" onclick="openChapter('${next.id}')">Next: ${esc(next.title)} \u2192</button>`
@@ -509,7 +608,7 @@ function submitTest() {
     total: player.questions.length,
     date: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear()
   });
-  save();
+  logActivity("test");
   go("result");
 }
 
@@ -640,6 +739,15 @@ function renderProfile() {
     <h2 class="sec">Saved library</h2>
     ${savedNotesHTML()}
 
+    <h2 class="sec">Daily target</h2>
+    <div class="setting" onclick="setGoal()">
+      <span>Chapters / tests per day</span>
+      <span class="muted">${S.goal.chapters} / ${S.goal.tests} \u203A</span>
+    </div>
+
+    <h2 class="sec">Exam countdown</h2>
+    ${examListHTML()}
+
     <h2 class="sec">PDF &amp; downloads</h2>
     <div class="item" onclick="go('pdf')" style="margin-bottom:10px">
       <div class="badge" style="background:rgba(126,34,206,.12);color:#7E22CE">PDF</div>
@@ -658,7 +766,7 @@ function renderProfile() {
     </div>
     <div class="card" style="padding:14px;margin-top:6px">
       <div class="muted" style="font-size:12px;line-height:1.6">
-        <b style="color:var(--ink)">StudyMitra v1.2</b><br>
+        <b style="color:var(--ink)">StudyMitra v1.3</b><br>
         Offline study material app for SSC, Banking, Railway and State PSC aspirants.
         Content is curated static material \u2014 always cross-check with official notifications.
       </div>
@@ -721,6 +829,171 @@ function renderSearch() {
   window.scrollTo(0, 0);
 }
 
+
+
+/* ---------- REVISE: flashcards, weak areas, exams ---------- */
+let fcIdx = 0, fcFlipped = false;
+
+function renderRevise() {
+  const card = FLASHCARDS[fcIdx] || FLASHCARDS[0];
+  const knownPct = Math.round((S.known.length / FLASHCARDS.length) * 100);
+  const weak = weakAreas();
+
+  $("screen-revise").innerHTML = `
+    <h2 class="sec">Flashcards <span class="link" onclick="resetKnown()">Reset</span></h2>
+    <div class="muted" style="margin-bottom:10px">${S.known.length}/${FLASHCARDS.length} known \u00B7 ${knownPct}%</div>
+    <div class="progressbar" style="margin-bottom:14px"><i style="width:${knownPct}%"></i></div>
+
+    <div class="flash" onclick="flipCard()">
+      <div class="tag">${esc(card.tag)}</div>
+      <div class="q">${esc(card.q)}</div>
+      ${fcFlipped ? `<div class="a">${esc(card.a)}</div>` : `<div class="hint">Tap to see the answer</div>`}
+    </div>
+
+    <div class="navrow" style="margin-top:12px">
+      <button class="btn btn-soft" onclick="nextCard(-1)">\u2039 Back</button>
+      ${fcFlipped
+        ? `<button class="btn btn-primary" onclick="markKnown()">Known \u2713</button>`
+        : `<button class="btn btn-primary" onclick="flipCard()">Show answer</button>`}
+      <button class="btn btn-soft" onclick="nextCard(1)">Next \u203A</button>
+    </div>
+
+    <h2 class="sec">Where you are weak</h2>
+    ${weak.length ? `<div class="list">${weak.slice(0, 4).map(w => `
+      <div class="item" onclick="${w.subject ? `openSubject('${w.subject}')` : "go('tests')"}">
+        <div class="badge" style="background:rgba(224,36,36,.1);color:#E02424">${w.pct}%</div>
+        <div class="txt"><b>${esc(w.exam)}</b><small>${w.n} test${w.n > 1 ? "s" : ""} \u00B7 ${w.subject ? "revise notes" : "attempt again"}</small></div>
+        <div class="arrow">\u203A</div>
+      </div>`).join("")}</div>`
+      : `<div class="card" style="padding:16px"><div class="muted">Do 2\u20133 tests and your weak areas will show up here.</div></div>`}
+
+    <h2 class="sec">Exam countdown <span class="link" onclick="addExam()">+ Add exam</span></h2>
+    ${examListHTML()}
+
+    <h2 class="sec">Quick GK revision</h2>
+    <div class="item" onclick="go('gk')">
+      <div class="badge">\uD83C\uDF10</div>
+      <div class="txt"><b>GK Zone one-liners</b><small>Symbols, days, schemes, rapid revision</small></div>
+      <div class="arrow">\u203A</div>
+    </div>
+    <div style="height:8px"></div>
+  `;
+}
+
+function flipCard() { fcFlipped = !fcFlipped; renderRevise(); }
+function nextCard(d) {
+  fcIdx = (fcIdx + d + FLASHCARDS.length) % FLASHCARDS.length;
+  fcFlipped = false;
+  renderRevise();
+}
+function markKnown() {
+  if (S.known.indexOf(fcIdx) === -1) S.known.push(fcIdx);
+  save();
+  toast("Marked as known");
+  nextCard(1);
+}
+function resetKnown() {
+  S.known = [];
+  save();
+  renderRevise();
+  toast("Flashcards reset");
+}
+
+const EXAM_SUBJECT = {
+  "WBCS": "wbcs", "WB Police": "wbpolice", "Kolkata Police": "wbpolice",
+  "NSOU": "nsou", "WB GK": "wbgk", "WBPSC Clerkship": "wbcs",
+  "SSC CGL": "polity", "Banking": "polity", "Railways": "geography",
+  "Polity": "polity", "Quant": "maths", "Reasoning": "reasoning"
+};
+
+function weakAreas() {
+  const byExam = {};
+  S.results.forEach(r => {
+    const t = findTest(r.testId);
+    const key = t ? t.exam : (String(r.testId).indexOf("daily") === 0 ? "Daily quiz" : "Other");
+    if (!byExam[key]) byExam[key] = { got: 0, tot: 0, n: 0 };
+    byExam[key].got += r.score;
+    byExam[key].tot += r.total;
+    byExam[key].n++;
+  });
+  return Object.keys(byExam)
+    .map(k => ({
+      exam: k,
+      pct: byExam[k].tot ? Math.round((byExam[k].got / byExam[k].tot) * 100) : 0,
+      n: byExam[k].n,
+      subject: EXAM_SUBJECT[k] || null
+    }))
+    .sort((a, b) => a.pct - b.pct);
+}
+
+function examListHTML() {
+  const up = upcomingExams();
+  if (!up.length) {
+    return `<div class="card" style="padding:16px">
+      <div class="muted">Koi exam date add nahi ki gayi. "Add exam" dabakar date daalein \u2014 home pe countdown dikhega.</div>
+    </div>`;
+  }
+  return `<div class="list">${up.map((e, i) => `
+    <div class="item">
+      <div class="badge" style="background:rgba(14,159,110,.12);color:#0E9F6E">${e.days >= 0 ? e.days : "\u2013"}</div>
+      <div class="txt"><b>${esc(e.name)}</b><small>${e.date}${e.days >= 0 ? " \u00B7 " + e.days + " days left" : " \u00B7 past"}</small></div>
+      <button class="btn btn-soft" style="padding:7px 10px" onclick="removeExam(${i})">Remove</button>
+    </div>`).join("")}</div>`;
+}
+
+function addExam() {
+  const name = prompt("Exam name (e.g. WBCS Prelims)");
+  if (!name || !name.trim()) return;
+  const date = prompt("Exam date (YYYY-MM-DD)", "2027-01-15");
+  if (!date) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) { toast("Format: YYYY-MM-DD"); return; }
+  S.exams = S.exams || [];
+  S.exams.push({ name: name.trim().slice(0, 30), date: date.trim() });
+  save();
+  renderRevise();
+  toast("Exam added");
+}
+function removeExam(i) {
+  S.exams.splice(i, 1);
+  save();
+  renderRevise();
+}
+function setGoal() {
+  const c = prompt("Chapters per day", S.goal.chapters);
+  if (c === null) return;
+  const t = prompt("Tests per day", S.goal.tests);
+  if (t === null) return;
+  S.goal = { chapters: Math.max(1, parseInt(c, 10) || 1), tests: Math.max(1, parseInt(t, 10) || 1) };
+  save();
+  renderProfile();
+  toast("Daily target updated");
+}
+
+/* ---------- MY NOTES ---------- */
+function saveNote(chId) {
+  const el = $("noteBox");
+  if (!el) return;
+  const v = el.value.trim();
+  if (v) S.notes[chId] = v;
+  else delete S.notes[chId];
+  save();
+  toast(v ? "Note saved" : "Note removed");
+}
+function myNotesHTML() {
+  const keys = Object.keys(S.notes || {});
+  if (!keys.length) {
+    return `<div class="card" style="padding:16px"><div class="muted">Kisi bhi chapter ke neeche "My note" box me apne points likhein \u2014 wo yahan aa jayenge.</div></div>`;
+  }
+  return `<div class="list">${keys.map(id => {
+    const f = findChapter(id);
+    if (!f) return "";
+    return `<div class="item" onclick="openChapter('${id}')">
+      <div class="badge" style="background:rgba(29,78,216,.12);color:#1D4ED8">\u270E</div>
+      <div class="txt"><b>${esc(f.ch.title)}</b><small>${esc((S.notes[id] || "").slice(0, 60))}${(S.notes[id] || "").length > 60 ? "\u2026" : ""}</small></div>
+      <div class="arrow">\u203A</div>
+    </div>`;
+  }).join("")}</div>`;
+}
 
 /* ---------- PDF LIBRARY ---------- */
 function renderPDF() {

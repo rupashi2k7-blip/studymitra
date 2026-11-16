@@ -1083,3 +1083,117 @@ const PACKS = [
     chapters: ["ns1", "ns2", "ns3", "ns4"]
   }
 ];
+
+/* ============ v1.3 : revision, planner and full-length mock ============ */
+
+/* ---- WBCS Mains descriptive practice chapter ---- */
+SUBJECTS.filter(s => s.id === "wbcs")[0].chapters.push({
+  id: "wbc4",
+  title: "Mains Descriptive Practice",
+  mins: 6,
+  body: `
+    <h3>How to write a mains answer</h3>
+    <ul>
+      <li><b>Intro (2\u20133 lines):</b> define the term or give the context, with one date or report.</li>
+      <li><b>Body:</b> 3\u20134 points, each a heading or a numbered line \u2014 cause, feature, example, criticism.</li>
+      <li><b>Conclusion:</b> one forward-looking line, ideally linked to a constitutional value or a current policy.</li>
+      <li>Use a diagram or a small table wherever the question asks for a comparison \u2014 it saves time and earns marks.</li>
+    </ul>
+    <h3>Practice questions (GS I &amp; II style)</h3>
+    <ul>
+      <li>Discuss the role of the Bengal Renaissance in shaping Indian nationalism.</li>
+      <li>Explain the physiographic divisions of West Bengal and their economic significance.</li>
+      <li>"The Governor is a constitutional head but not a mere figurehead." Comment.</li>
+      <li>Evaluate the impact of the partition of Bengal (1905) on the freedom movement.</li>
+      <li>Write a note on the shifting pattern of West Bengal's economy from agriculture to services.</li>
+      <li>Discuss the major peasant movements of Bengal in the nineteenth and twentieth centuries.</li>
+      <li>Examine the significance of the Sundarbans for the ecology and economy of West Bengal.</li>
+      <li>Explain the constitutional provisions relating to Panchayati Raj and their working in West Bengal.</li>
+    </ul>
+    <div class="tip"><b>Essay practice:</b> pick one topic a week and write 300 words in 30 minutes, then check whether you used a definition, two examples and a conclusion. Keep the same structure for the language paper.</div>`
+});
+
+/* ---- Full-length mock ---- */
+TESTS.push({
+  id: "full_wbp1",
+  title: "WB Police \u2013 Full Length Mock 1",
+  exam: "WB Police",
+  qcount: 25,
+  mins: 25,
+  tag: "Full Mock",
+  neg: 0.25,
+  desc: "25 questions: GK, maths and reasoning on the real pattern",
+  questions: [
+    { q: "The National Bird of India is:", o: ["Peacock", "Parrot", "Sparrow", "Crane"], a: 0, e: "The Indian peacock is the national bird." },
+    { q: "Who was the first Indian to win a Nobel Prize?", o: ["C. V. Raman", "Rabindranath Tagore", "Amartya Sen", "Mother Teresa"], a: 1, e: "Tagore won the Nobel Prize in Literature in 1913." },
+    { q: "The state animal of West Bengal is:", o: ["Royal Bengal tiger", "Fishing cat", "Elephant", "Deer"], a: 1, e: "The fishing cat is the state animal of West Bengal." },
+    { q: "Sundarbans is mainly located in which district?", o: ["North 24 Parganas", "South 24 Parganas", "Purba Medinipur", "Nadia"], a: 1, e: "The Indian Sundarbans lies mostly in South 24 Parganas district." },
+    { q: "Fundamental Rights are contained in which Part of the Constitution?", o: ["Part II", "Part III", "Part IV", "Part V"], a: 1, e: "Part III, Articles 12 to 35, contains the Fundamental Rights." },
+    { q: "The headquarters of the Reserve Bank of India is in:", o: ["New Delhi", "Kolkata", "Mumbai", "Ahmedabad"], a: 2, e: "The RBI's central office is in Mumbai." },
+    { q: "Who wrote the National Anthem of India?", o: ["Bankim Chandra Chatterjee", "Rabindranath Tagore", "Kazi Nazrul Islam", "Sarojini Naidu"], a: 1, e: "Jana Gana Mana was written by Rabindranath Tagore." },
+    { q: "The Damodar Valley Corporation was set up on which river?", o: ["Damodar", "Hooghly", "Teesta", "Ajay"], a: 0, e: "DVC is a multipurpose project on the Damodar river." },
+    { q: "15% of 800 is:", o: ["100", "110", "120", "130"], a: 2, e: "10% = 80, 5% = 40, so 15% = 120." },
+    { q: "An article bought for \u20B9250 is sold for \u20B9300. The profit percentage is:", o: ["15%", "20%", "25%", "30%"], a: 1, e: "Profit = \u20B950; 50/250 \u00D7 100 = 20%." },
+    { q: "The simple interest on \u20B91,500 at 6% per annum for 3 years is:", o: ["\u20B9225", "\u20B9270", "\u20B9300", "\u20B9325"], a: 1, e: "SI = 1500 \u00D7 6 \u00D7 3 \u00F7 100 = \u20B9270." },
+    { q: "A train 200 m long crosses a pole in 20 seconds. Its speed is:", o: ["10 m/s", "20 m/s", "25 m/s", "30 m/s"], a: 0, e: "Speed = 200 \u00F7 20 = 10 m/s, which is 36 km/h." },
+    { q: "A can finish a work in 10 days and B in 15 days. Working together they take:", o: ["5 days", "6 days", "7 days", "8 days"], a: 1, e: "1/10 + 1/15 = 5/30 = 1/6, so 6 days." },
+    { q: "Two numbers are in the ratio 3 : 5 and their sum is 64. The larger number is:", o: ["24", "32", "40", "44"], a: 2, e: "Total parts = 8, one part = 8, larger = 5 \u00D7 8 = 40." },
+    { q: "A shirt marked at \u20B9500 is sold at a 20% discount. The selling price is:", o: ["\u20B9380", "\u20B9400", "\u20B9420", "\u20B9450"], a: 1, e: "Discount = \u20B9100, so SP = \u20B9400." },
+    { q: "54 km/h equals:", o: ["12 m/s", "15 m/s", "18 m/s", "20 m/s"], a: 1, e: "Multiply by 5/18: 54 \u00D7 5/18 = 15 m/s." },
+    { q: "The square root of 1764 is:", o: ["38", "42", "44", "46"], a: 1, e: "42 \u00D7 42 = 1764." },
+    { q: "If 5 workers build a shed in 12 days, 10 workers will build it in:", o: ["4 days", "6 days", "8 days", "10 days"], a: 1, e: "Worker-days are fixed at 60, so 10 workers need 6 days." },
+    { q: "The LCM of 12 and 18 is:", o: ["24", "36", "48", "72"], a: 1, e: "12 = 2\u00B2\u00D73 and 18 = 2\u00D73\u00B2, so LCM = 2\u00B2\u00D73\u00B2 = 36." },
+    { q: "Find the next term: 5, 10, 20, 40, ?", o: ["60", "70", "80", "100"], a: 2, e: "Each term doubles, so the next term is 80." },
+    { q: "Which is the odd one out: 3, 5, 7, 9, 11?", o: ["5", "7", "9", "11"], a: 2, e: "9 is not a prime number; the others are primes." },
+    { q: "If BOOK is coded as CPPL, then PEN is coded as:", o: ["QFO", "QFN", "OFO", "QGO"], a: 0, e: "Each letter moves one step forward: P\u2192Q, E\u2192F, N\u2192O." },
+    { q: "A man walks 3 km north and then 4 km east. How far is he from the start?", o: ["5 km", "6 km", "7 km", "8 km"], a: 0, e: "By Pythagoras, distance = \u221A(3\u00B2 + 4\u00B2) = 5 km." },
+    { q: "In the Constitution, 'police' and 'public order' are subjects of the:", o: ["Union List", "State List", "Concurrent List", "Residuary powers"], a: 1, e: "Both are State List subjects, so state governments control their police." },
+    { q: "The first metro railway of India started in:", o: ["Delhi", "Mumbai", "Kolkata", "Chennai"], a: 2, e: "Kolkata Metro began commercial service in 1984, the first in India." }
+  ]
+});
+
+/* ---- Flashcards for quick revision ---- */
+const FLASHCARDS = [
+  { q: "Constitution adopted on?", a: "26 November 1949 (in force 26 January 1950)", tag: "Polity" },
+  { q: "Who chaired the Drafting Committee?", a: "Dr B. R. Ambedkar", tag: "Polity" },
+  { q: "Article 32 is called?", a: "Heart and soul of the Constitution (constitutional remedies)", tag: "Polity" },
+  { q: "Fundamental Duties added by?", a: "42nd Amendment, 1976 (Swaraj Paul Committee)", tag: "Polity" },
+  { q: "Panchayati Raj amendment?", a: "73rd Amendment, 1992 \u2014 Part IX, 11th Schedule, 29 subjects", tag: "Polity" },
+  { q: "Lok Sabha and Rajya Sabha strength?", a: "543 elected / 245 (233 elected + 12 nominated)", tag: "Polity" },
+  { q: "Money Bill article?", a: "Article 110 \u2014 Lok Sabha only, Speaker certifies", tag: "Polity" },
+  { q: "Battle of Plassey?", a: "1757 \u2014 Clive defeated Siraj-ud-Daulah", tag: "History" },
+  { q: "Permanent Settlement?", a: "1793 \u2014 Lord Cornwallis", tag: "History" },
+  { q: "Dandi March?", a: "12 March \u2013 6 April 1930, Sabarmati to Dandi, 24 days", tag: "History" },
+  { q: "First Viceroy of India?", a: "Lord Canning (1858)", tag: "History" },
+  { q: "Quit India Movement?", a: "8 August 1942, Bombay \u2014 'Do or Die'", tag: "History" },
+  { q: "Longest river of India?", a: "Ganga, about 2,525 km", tag: "Geography" },
+  { q: "Standard Meridian of India?", a: "82\u00B030'E, passes through Mirzapur", tag: "Geography" },
+  { q: "Highest peak of West Bengal?", a: "Sandakphu, 3,636 m", tag: "WB GK" },
+  { q: "Sorrow of Bengal?", a: "Damodar river", tag: "WB GK" },
+  { q: "Districts in West Bengal?", a: "23 districts, five divisions", tag: "WB GK" },
+  { q: "UNESCO World Heritage in WB?", a: "Sundarbans (1987), Darjeeling Himalayan Railway (1999), Santiniketan (2023)", tag: "WB GK" },
+  { q: "Durga Puja UNESCO listing?", a: "Intangible Cultural Heritage, 2021", tag: "WB GK" },
+  { q: "Kanyashree Prakash?", a: "2013 \u2014 support for girl students; won UN Public Service Award", tag: "WB GK" },
+  { q: "Swasthya Sathi cover?", a: "\u20B95 lakh per family per year, cashless", tag: "WB GK" },
+  { q: "Lakshmir Bhandar?", a: "2021 \u2014 monthly income support to women heads of households", tag: "WB GK" },
+  { q: "Calcutta High Court established?", a: "1862 \u2014 oldest High Court in India", tag: "WB GK" },
+  { q: "Kolkata Police headquarters?", a: "Lalbazar", tag: "WB Police" },
+  { q: "Kolkata Metro first service?", a: "1984 \u2014 India's first metro railway", tag: "WB Police" },
+  { q: "Police in which list?", a: "State List (Seventh Schedule)", tag: "WB Police" },
+  { q: "What is an FIR?", a: "First Information Report of a cognizable offence", tag: "WB Police" },
+  { q: "DGP stands for?", a: "Director General of Police \u2014 heads the state police force", tag: "WB Police" },
+  { q: "NSOU established?", a: "1997, state open university of West Bengal, Salt Lake Kolkata", tag: "NSOU" },
+  { q: "Two parts of NSOU assessment?", a: "Assignments (continuous) + Term End Examination", tag: "NSOU" },
+  { q: "Social contract thinkers?", a: "Hobbes, Locke, Rousseau", tag: "NSOU" },
+  { q: "Separation of powers by?", a: "Montesquieu", tag: "NSOU" },
+  { q: "SI formula?", a: "P \u00D7 R \u00D7 T \u00F7 100", tag: "Maths" },
+  { q: "Profit percentage formula?", a: "(Profit \u00F7 CP) \u00D7 100", tag: "Maths" },
+  { q: "km/h to m/s?", a: "Multiply by 5/18", tag: "Maths" },
+  { q: "Average of first n natural numbers?", a: "(n + 1) \u00F7 2", tag: "Maths" },
+  { q: "EJOTY stands for?", a: "E=5, J=10, O=15, T=20, Y=25 \u2014 letter positions", tag: "Reasoning" },
+  { q: "Opposite letters sum to?", a: "27 (A\u2013Z, B\u2013Y, C\u2013X ...)", tag: "Reasoning" },
+  { q: "Vitamin C deficiency?", a: "Scurvy", tag: "Science" },
+  { q: "Powerhouse of the cell?", a: "Mitochondrion", tag: "Science" },
+  { q: "Universal donor blood group?", a: "O negative", tag: "Science" },
+  { q: "Baking soda chemical name?", a: "Sodium bicarbonate, NaHCO\u2083", tag: "Science" }
+];

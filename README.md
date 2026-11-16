@@ -10,12 +10,15 @@ An **offline study-material app** for West Bengal and central government exams �
 
 | Section | Content |
 |---|---|
-| **Notes** | 11 subjects · 39 chapters — West Bengal GK, WBPSC/WBCS, WB Police & Kolkata Police, NSOU guide, plus Indian Polity, History, Geography, Science, Quant, Reasoning and English |
-| **PYQ & mock tests** | 12 test sets · 110 MCQs — WBCS prelims, WB Police, Kolkata Police, WB GK, NSOU BDP, WBPSC Clerkship, SSC, Banking and Railways, with timer, palette, negative marking and full solutions |
+| **Notes** | 11 subjects · 40 chapters — West Bengal GK, WBPSC/WBCS, WB Police & Kolkata Police, NSOU guide, plus Indian Polity, History, Geography, Science, Quant, Reasoning and English |
+| **PYQ & mock tests** | 13 test sets · 135 MCQs (incl. a 25-question full-length WB Police mock) — WBCS prelims, WB Police, Kolkata Police, WB GK, NSOU BDP, WBPSC Clerkship, SSC, Banking and Railways, with timer, palette, negative marking and full solutions |
 | **PDF packs** | 5 printable packs (WB GK, WBCS PYQ solved, police guide, all-PYQ booklet, NSOU guide) with **Save as PDF** through the Android print sheet — works fully offline |
 | **Daily quiz** | 5 fresh mixed questions every day, keeps your streak alive |
 | **GK Zone** | National symbols, important days, government schemes, one-liner revision |
 | **Library** | Bookmark chapters, track chapters read, accuracy and best score |
+| **Revise tab** | 42 flashcards with a "known" counter, weak-area analysis from your test history, exam countdown |
+| **Planner** | Daily target (chapters + tests), today's progress ring and a last-7-days activity strip |
+| **My notes** | Write your own notes under any chapter; they are saved on the device and listed under Notes |
 | **Extras** | Global search, dark mode, editable profile, progress saved on the device |
 
 ## Features
