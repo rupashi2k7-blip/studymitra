@@ -28,7 +28,8 @@ const DEFAULT_STATE = {
   activity: {},
   todayRec: { date: "", chapters: 0, tests: 0 },
   mistakes: [],
-  lang: "bn"
+  lang: "bn",
+  dailyUpdated: ""
 };
 
 const EXAMS = ["All", "WBCS", "WB Police", "Kolkata Police", "NSOU", "WB GK",
@@ -334,7 +335,7 @@ function renderHome() {
       <div class="badge">\u26A1</div>
       <div class="txt">
         <b>Today's 5 questions</b>
-        <small>Mixed GK \u00B7 5 min \u00B7 keeps your streak alive</small>
+        <small>${(S.dailyUpdated || "") === isoToday() ? "\u2713 Updated today" : (S.dailyUpdated ? "Updated " + S.dailyUpdated : "Offline set")} \u00B7 5 min \u00B7 ${dailySet().questions.length} Q</small>
       </div>
       <div class="arrow">\u203A</div>
     </div>
@@ -541,16 +542,87 @@ function recentResultsHTML() {
 }
 
 /* ---------- QUIZ PLAYER ---------- */
+/* ---------- daily questions: remote sync + offline fallback ---------- */
+const DAILY_URL = "https://raw.githubusercontent.com/rupashi2k7-blip/studymitra/main/content/daily.json";
+const DAILY_KEY = "sm_daily_v1";
+
+function isoToday() {
+  const d = new Date();
+  return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+}
+function remoteDaily() {
+  try {
+    const raw = localStorage.getItem(DAILY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function saveRemoteDaily(obj) {
+  try { localStorage.setItem(DAILY_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+
+function syncDaily(manual) {
+  const done = (msg) => { if (manual) toast(msg); };
+  try {
+    if (typeof fetch !== "function") { done("এই ডিভাইসে আপডেট সম্ভব নয়"); return; }
+    let ctrl = null;
+    let opts = {};
+    if (typeof AbortController === "function") {
+      ctrl = new AbortController();
+      opts.signal = ctrl.signal;
+      setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 8000);
+    }
+    fetch(DAILY_URL + "?t=" + Date.now(), opts)
+      .then(function (r) { return r.json(); })
+      .then(function (obj) {
+        if (!obj || !obj.days || !obj.days.length) throw new Error("empty");
+        saveRemoteDaily(obj);
+        S.dailyUpdated = obj.updated || isoToday();
+        save();
+        done("নতুন প্রশ্ন এসেছে — " + S.dailyUpdated);
+        if (currentScreen === "home") renderHome();
+        if (currentScreen === "profile") renderProfile();
+      })
+      .catch(function () {
+        done("ইন্টারনেট নেই — আগের প্রশ্নই চলবে");
+      });
+  } catch (e) {
+    done("আপডেট করা গেল না");
+  }
+}
+
 function dailySet() {
+  const remote = remoteDaily();
+  if (remote && remote.days && remote.days.length) {
+    const t = isoToday();
+    let day = null;
+    for (let i = 0; i < remote.days.length; i++) {
+      if (remote.days[i].date === t) { day = remote.days[i]; break; }
+    }
+    if (!day) {
+      const past = remote.days.filter(function (d) { return d.date <= t; })
+        .sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+      day = past[0] || remote.days[0];
+    }
+    if (day && day.questions && day.questions.length) {
+      return {
+        id: "daily", title: day.title || "Daily Quiz", exam: "Mixed", mins: 5,
+        questions: day.questions.slice(0, 5), date: day.date
+      };
+    }
+  }
   const start = new Date().getDate() % DAILY_POOL.length;
   const out = [];
   for (let i = 0; i < 5; i++) out.push(DAILY_POOL[(start + i) % DAILY_POOL.length]);
-  return { id: "daily", title: "Daily Quiz", exam: "Mixed", mins: 5, questions: out };
+  return { id: "daily", title: "Daily Quiz", exam: "Mixed", mins: 5, questions: out, date: "" };
 }
 
 function startDaily() {
   const d = dailySet();
-  beginSession({ id: "daily-" + today(), title: "Daily Quiz \u2014 " + today(), mins: 5, questions: d.questions, tag: "Daily" });
+  beginSession({
+    id: "daily-" + (d.date || today()),
+    title: d.title + " \u2014 " + (d.date || today()),
+    mins: 5, neg: 0, questions: d.questions, tag: "Daily"
+  });
 }
 
 function startTest(id) {
@@ -810,6 +882,12 @@ function renderProfile() {
 
     <h2 class="sec">Saved library</h2>
     ${savedNotesHTML()}
+
+    <h2 class="sec">Daily question update</h2>
+    <div class="setting" onclick="syncDaily(true)">
+      <span>Download today's questions</span>
+      <span class="muted" style="font-weight:700;color:var(--brand)">${S.dailyUpdated || "\u2014"} \u21BB</span>
+    </div>
 
     <h2 class="sec">Daily target</h2>
     <div class="setting" onclick="setGoal()">
@@ -1348,6 +1426,9 @@ function boot() {
   });
 
   go("home");
+  if ((S.dailyUpdated || "") !== isoToday()) {
+    setTimeout(function () { syncDaily(false); }, 1200);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", boot);
