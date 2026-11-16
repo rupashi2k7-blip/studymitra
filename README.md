@@ -103,3 +103,53 @@ Rebuild the APK and the new material appears in the app.
 - **PYQ sets are previous-year *pattern* questions with explanations — they are not official question papers** and no official paper is reproduced.
 - Exam patterns, negative-marking rules, physical standards and scheme amounts change between cycles — always cross-check with the official notification (WBPSC, WBPRB, NSOU or the scheme portal) before relying on a figure.
 - NSOU assignment and term-end-exam dates must be confirmed with your study centre.
+
+## Building the app — two routes
+
+The app is one native `Activity` hosting a `WebView`; all content and UI live in `app/assets/www`.
+That means the build has no third-party libraries, so it can be built two ways.
+
+### Route A — Android Studio / Gradle (use this for Google Play)
+
+Everything is already configured: `settings.gradle`, `build.gradle`, `app/build.gradle`,
+`gradle.properties` and a Gradle-friendly manifest at `app/src/main/AndroidManifest.xml`.
+`targetSdk` is 36 and `compileSdk` 36, as Play requires for new apps.
+
+1. Install **Android Studio** (it brings its own JDK and Android SDK).
+2. `File → Open` → choose this repository folder → wait for the Gradle sync.
+3. Bump `versionCode` / `versionName` in `app/build.gradle` for every release.
+4. Create your upload keystore once: `Build → Generate Signed Bundle / APK → Android App Bundle
+   → Create new…` (save the `.jks` file and both passwords somewhere safe — you need the same key for
+   every future update).
+5. `Build → Generate Signed Bundle / APK → Android App Bundle → release` → you get
+   `app/release/app-release.aab`. Upload that file to Play Console.
+
+Command line equivalent:
+
+```bash
+./gradlew bundleRelease        # needs the keystore configured in app/build.gradle
+```
+
+### Route B — the no-Gradle script (quick local APK for testing)
+
+`build_apk.sh` uses only the Android build-tools directly — `aapt2` → `javac` → `d8` →
+`zipalign` → `apksigner`. It produces a signed `.apk` for sideloading and takes a few seconds:
+
+```bash
+export ANDROID_HOME=/path/to/android-sdk     # platform-35 + build-tools 34
+bash build_apk.sh                            # -> StudyMitra.apk
+```
+
+Play does **not** accept this APK — use Route A for the store.
+
+### Where things live
+
+| Path | What it is |
+|---|---|
+| `app/src/com/studymitra/app/MainActivity.java` | the only Java file — hosts the WebView, print bridge, back handling |
+| `app/assets/www/index.html` | app shell (top bar, bottom navigation) |
+| `app/assets/www/style.css` | design system, light + dark |
+| `app/assets/www/data.js` | **all content** — notes, tests, GK, flashcards, PDF packs, Bengali + English |
+| `app/assets/www/app.js` | screens, quiz engine, progress, daily sync |
+| `app/res/drawable/ic_launcher.png` | launcher icon |
+| `content/daily.json` | daily quiz questions the app downloads |

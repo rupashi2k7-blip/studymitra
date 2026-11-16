@@ -1,0 +1,4 @@
+// Root build file — no dependencies needed, the app is a single WebView activity.
+plugins {
+    id 'com.android.application' version '8.9.0' apply false
+}

@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.studymitra.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.studymitra.app"
+        minSdk 21
+        targetSdk 36          // Google Play requirement (Aug 2026 onwards)
+        versionCode 9
+        versionName "2.3"
+    }
+
+    // The project keeps its own simple layout (no src/main/java nesting)
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // sign with your upload key via Android Studio, or with signingConfigs below
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
