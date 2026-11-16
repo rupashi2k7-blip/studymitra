@@ -46,6 +46,7 @@ body{
   color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;
   border:1px solid rgba(255,255,255,.45);letter-spacing:.5px;
 }
+.logoi{object-fit:cover;display:block;background:#E85D04;border:1px solid rgba(255,255,255,.5);}
 .brandtxt{display:flex;flex-direction:column;flex:1;min-width:0;}
 .brandtxt strong{color:#fff;font-size:17px;letter-spacing:.2px;}
 .brandtxt span{color:rgba(255,255,255,.86);font-size:11px;}
