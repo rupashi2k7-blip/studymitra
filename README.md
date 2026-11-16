@@ -1,6 +1,6 @@
 # StudyMitra 📚
 
-An **offline study-material app** for Indian competitive exams (SSC, Banking, Railways, State PSC), built in the spirit of Testbook / Adda247 — notes, chapter-wise mock tests and a GK zone, all bundled inside the app with **no internet needed**.
+An **offline study-material app** for West Bengal and central government exams — **NSOU, WBPSC/WBCS, WB Police, Kolkata Police**, plus SSC, Banking and Railways — built in the spirit of Testbook / Adda247. Notes, PYQ-style practice sets, mock tests and printable PDF packs, all bundled inside the app with **no internet needed**.
 
 ![platform](https://img.shields.io/badge/platform-Android%205.0%2B-3DDC84)
 ![size](https://img.shields.io/badge/apk-~50%20KB-blue)
@@ -10,17 +10,19 @@ An **offline study-material app** for Indian competitive exams (SSC, Banking, Ra
 
 | Section | Content |
 |---|---|
-| **Notes** | 7 subjects · 24 chapters — Indian Polity, Modern History, Geography, General Science, Quantitative Aptitude, Reasoning, English |
-| **Mock tests** | 6 test sets · 54 MCQs with timer, question palette, negative-marking-free scoring, full solutions |
+| **Notes** | 11 subjects · 39 chapters — West Bengal GK, WBPSC/WBCS, WB Police & Kolkata Police, NSOU guide, plus Indian Polity, History, Geography, Science, Quant, Reasoning and English |
+| **PYQ & mock tests** | 12 test sets · 110 MCQs — WBCS prelims, WB Police, Kolkata Police, WB GK, NSOU BDP, WBPSC Clerkship, SSC, Banking and Railways, with timer, palette, negative marking and full solutions |
+| **PDF packs** | 5 printable packs (WB GK, WBCS PYQ solved, police guide, all-PYQ booklet, NSOU guide) with **Save as PDF** through the Android print sheet — works fully offline |
 | **Daily quiz** | 5 fresh mixed questions every day, keeps your streak alive |
 | **GK Zone** | National symbols, important days, government schemes, one-liner revision |
 | **Library** | Bookmark chapters, track chapters read, accuracy and best score |
-| **Extras** | Global search across notes and tests, dark mode, editable profile, progress saved on the device |
+| **Extras** | Global search, dark mode, editable profile, progress saved on the device |
 
 ## Features
 
 - **100% offline** — every note, question and explanation ships inside the APK. Nothing is fetched from a server.
-- **Exam-style test player** — countdown timer, per-question palette, mark-and-move, submit-early confirmation, and a solutions screen with an explanation for every question.
+- **Exam-style test player** — countdown timer, per-question palette, mark-and-move, submit-early confirmation, **negative marking** (0.25 / 0.33 per wrong answer, as in the real papers), and a solutions screen with an explanation for every question.
+- **Save as PDF** — every pack opens a print-ready sheet; the Android print dialog saves it as a PDF file you can share on WhatsApp or email.
 - **Progress that persists** — streak, chapters read, test history and bookmarks are stored in local storage on the phone.
 - **Tiny and fast** — the UI is a single hand-written HTML/CSS/JS bundle rendered inside a native `WebView`; no frameworks, no AndroidX, no Gradle dependencies.
 - **Dark mode** for night revision.
@@ -92,4 +94,7 @@ Rebuild the APK and the new material appears in the app.
 
 ## Notes on content
 
-The material is curated static study content for revision. Exam patterns and government-scheme details change — always cross-check with the official notification or the scheme's portal before relying on a figure.
+- The material is curated static study content for revision.
+- **PYQ sets are previous-year *pattern* questions with explanations — they are not official question papers** and no official paper is reproduced.
+- Exam patterns, negative-marking rules, physical standards and scheme amounts change between cycles — always cross-check with the official notification (WBPSC, WBPRB, NSOU or the scheme portal) before relying on a figure.
+- NSOU assignment and term-end-exam dates must be confirmed with your study centre.

@@ -260,3 +260,13 @@ h2.sec span.link{font-size:12px;color:var(--brand);font-weight:600;}
   opacity:0;pointer-events:none;transition:.22s;max-width:86%;text-align:center;
 }
 .toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ---------- print / save-as-pdf ---------- */
+@media print{
+  .topbar,.bottomnav,.noprint,.toast{display:none !important;}
+  body{background:#fff !important;padding:0 !important;}
+  .screen{display:none !important;}
+  .screen.active{display:block !important;padding:0 !important;}
+  .card{box-shadow:none !important;border:0 !important;}
+  .item,.opt,.exp{page-break-inside:avoid;}
+}

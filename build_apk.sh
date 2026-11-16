@@ -21,8 +21,8 @@ $BT/aapt2 link \
   -A $APP/assets \
   --min-sdk-version 21 \
   --target-sdk-version 34 \
-  --version-code 2 \
-  --version-name 1.1 \
+  --version-code 3 \
+  --version-name 1.2 \
   $BUILD/compiled/res.zip
 
 echo "== javac =="

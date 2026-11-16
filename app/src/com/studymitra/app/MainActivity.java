@@ -3,10 +3,13 @@ package com.studymitra.app;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -54,12 +57,32 @@ public class MainActivity extends Activity {
                 }
             });
             web.setWebChromeClient(new WebChromeClient());
+            try {
+                web.addJavascriptInterface(new PrintBridge(), "AndroidPrint");
+            } catch (Throwable ignored) { }
             web.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
             setContentView(web);
             web.loadUrl(START_URL);
         } catch (Throwable t) {
             showFallback("The app could not start on this device.\n\n" + t);
+        }
+    }
+
+    /** Bridge used by the app's "Save as PDF" button. */
+    private class PrintBridge {
+        @JavascriptInterface
+        public void printPage() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                        PrintDocumentAdapter adapter = web.createPrintDocumentAdapter("StudyMitra-Pack");
+                        pm.print("StudyMitra-Pack", adapter, null);
+                    } catch (Throwable ignored) { }
+                }
+            });
         }
     }
 

@@ -23,6 +23,9 @@ const DEFAULT_STATE = {
   exam: "All"
 };
 
+const EXAMS = ["All", "WBCS", "WB Police", "Kolkata Police", "NSOU", "WB GK",
+  "WBPSC Clerkship", "SSC CGL", "Banking", "Railways"];
+
 let S = loadState();
 let currentScreen = "home";
 let player = null;      // active test session
@@ -120,7 +123,9 @@ function go(name) {
     chapter: renderChapter,
     player: renderPlayer,
     result: renderResult,
-    search: renderSearch
+    search: renderSearch,
+    pdf: renderPDF,
+    print: renderPrint
   }[name];
   if (render) render();
   window.scrollTo(0, 0);
@@ -164,14 +169,13 @@ function renderHome() {
     <div class="quick">
       <div class="qa" onclick="go('notes')"><div class="ic o">\uD83D\uDCD8</div><span>Study notes</span></div>
       <div class="qa" onclick="go('tests')"><div class="ic b">\uD83D\uDCDD</div><span>Mock tests</span></div>
-      <div class="qa" onclick="openChapter('mat1')"><div class="ic g">\uD83D\uDCD0</div><span>Formulas</span></div>
+      <div class="qa" onclick="go('pdf')"><div class="ic g">\uD83D\uDCC4</div><span>PDF packs</span></div>
       <div class="qa" onclick="go('gk')"><div class="ic p">\uD83C\uDF10</div><span>GK zone</span></div>
     </div>
 
     <h2 class="sec">Choose your exam</h2>
     <div class="chips">
-      ${["All", "SSC CGL", "Banking", "Railways", "Polity", "Quant", "Reasoning"]
-        .map(e => `<div class="chip ${S.exam === e ? "on" : ""}" onclick="pickExam('${e}')">${e}</div>`).join("")}
+      ${EXAMS.map(e => `<div class="chip ${S.exam === e ? "on" : ""}" onclick="pickExam('${e}')">${e}</div>`).join("")}
     </div>
 
     <h2 class="sec">Daily quiz <span class="link" onclick="startDaily()">Start now \u2192</span></h2>
@@ -192,6 +196,19 @@ function renderHome() {
           <div class="txt">
             <b>${esc(t.title)}</b>
             <small>${t.qcount} questions \u00B7 ${t.mins} min \u00B7 ${esc(t.exam)}</small>
+          </div>
+          <div class="arrow">\u203A</div>
+        </div>`).join("")}
+    </div>
+
+    <h2 class="sec">PYQ practice sets <span class="link" onclick="go('tests')">All tests</span></h2>
+    <div class="list">
+      ${TESTS.filter(t => t.tag === "PYQ").slice(0, 3).map(t => `
+        <div class="item" onclick="startTest('${t.id}')">
+          <div class="badge" style="background:rgba(224,36,36,.1);color:#E02424">PYQ</div>
+          <div class="txt">
+            <b>${esc(t.title)}</b>
+            <small>${t.qcount} Q \u00B7 ${t.mins} min \u00B7 ${t.neg ? "\u2212" + t.neg + " negative" : "no negative"}</small>
           </div>
           <div class="arrow">\u203A</div>
         </div>`).join("")}
@@ -219,6 +236,11 @@ function pickExam(e) {
 function renderNotes() {
   $("screen-notes").innerHTML = `
     <h2 class="sec">Study material <span class="link">${allChapters().length} chapters</span></h2>
+    <div class="item" onclick="go('pdf')" style="margin-bottom:10px">
+      <div class="badge" style="background:rgba(126,34,206,.12);color:#7E22CE">PDF</div>
+      <div class="txt"><b>PDF packs &amp; downloads</b><small>Print-ready packs \u2014 save as PDF on your phone</small></div>
+      <div class="arrow">\u203A</div>
+    </div>
     <div class="list">
       ${SUBJECTS.map(s => `
         <div class="item" onclick="openSubject('${s.id}')">
@@ -318,8 +340,7 @@ function renderTests() {
   $("screen-tests").innerHTML = `
     <h2 class="sec">Mock tests &amp; practice <span class="link">${TESTS.length} sets</span></h2>
     <div class="chips">
-      ${["All", "SSC CGL", "Banking", "Railways", "Polity", "Quant", "Reasoning"]
-        .map(e => `<div class="chip ${S.exam === e ? "on" : ""}" onclick="pickExam('${e}')">${e}</div>`).join("")}
+      ${EXAMS.map(e => `<div class="chip ${S.exam === e ? "on" : ""}" onclick="pickExam('${e}')">${e}</div>`).join("")}
     </div>
     <div class="list" style="margin-top:8px">
       ${(list.length ? list : []).map(t => `
@@ -366,7 +387,7 @@ function startDaily() {
 function startTest(id) {
   const t = findTest(id);
   if (!t) return;
-  beginSession({ id: t.id, title: t.title, mins: t.mins, questions: t.questions, tag: t.tag });
+  beginSession({ id: t.id, title: t.title, mins: t.mins, neg: t.neg || 0, questions: t.questions, tag: t.tag });
 }
 
 function beginSession(cfg) {
@@ -374,6 +395,7 @@ function beginSession(cfg) {
     id: cfg.id,
     title: cfg.title,
     mins: cfg.mins,
+    neg: cfg.neg || 0,
     questions: cfg.questions,
     answers: cfg.questions.map(() => null),
     idx: 0,
@@ -422,7 +444,7 @@ function renderPlayer() {
     </div>
 
     <div class="qbox">
-      <div class="qmeta"><span>+1 mark</span><span>No negative marking</span></div>
+      <div class="qmeta"><span>+1 mark</span><span>${player.neg ? "\u2212" + player.neg + " per wrong answer" : "No negative marking"}</span></div>
       <div class="qtext">${esc(q.q)}</div>
       ${q.o.map((op, i) => `
         <div class="opt ${chosen === i ? "sel" : ""}" onclick="pickOption(${i})">
@@ -471,13 +493,19 @@ function submitTest() {
   player.submitted = true;
   stopTimer();
 
-  let score = 0;
-  player.questions.forEach((q, i) => { if (player.answers[i] === q.a) score++; });
+  let score = 0, wrong = 0;
+  player.questions.forEach((q, i) => {
+    if (player.answers[i] === q.a) score++;
+    else if (player.answers[i] !== null) wrong++;
+  });
+  const marks = Math.round((score - wrong * (player.neg || 0)) * 100) / 100;
   const d = new Date();
   S.results.push({
     testId: player.id,
     title: player.title,
     score: score,
+    wrong: wrong,
+    marks: marks,
     total: player.questions.length,
     date: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear()
   });
@@ -493,6 +521,8 @@ function renderResult() {
     if (player.answers[i] === q.a) score++;
     if (player.answers[i] === null) skipped++;
   });
+  const wrongCount = total - score - skipped;
+  const marks = Math.round((score - wrongCount * (player.neg || 0)) * 100) / 100;
   const pct = Math.round((score / total) * 100);
   const letters = ["A", "B", "C", "D"];
 
@@ -501,6 +531,7 @@ function renderResult() {
       <div class="big">${score}<small>/${total}</small></div>
       <p>${esc(player.title)}</p>
       <p style="font-size:14px;color:#FFA62B;font-weight:700;margin-top:6px">${pct}% \u00B7 ${pct >= 70 ? "Excellent" : pct >= 40 ? "Keep going" : "Revise and retry"}</p>
+      ${player.neg ? `<p style="font-size:12.5px;color:#C9D3E6;margin-top:4px">Marks: <b style="color:#fff">${marks}</b> / ${total} after \u2212${player.neg} per wrong answer</p>` : ""}
     </div>
 
     <div class="resgrid">
@@ -538,7 +569,7 @@ function renderResult() {
 
 function retry() {
   if (!player) return;
-  beginSession({ id: player.id, title: player.title, mins: player.mins, questions: player.questions });
+  beginSession({ id: player.id, title: player.title, mins: player.mins, neg: player.neg, questions: player.questions });
 }
 
 function reviewTest(id) {
@@ -609,6 +640,13 @@ function renderProfile() {
     <h2 class="sec">Saved library</h2>
     ${savedNotesHTML()}
 
+    <h2 class="sec">PDF &amp; downloads</h2>
+    <div class="item" onclick="go('pdf')" style="margin-bottom:10px">
+      <div class="badge" style="background:rgba(126,34,206,.12);color:#7E22CE">PDF</div>
+      <div class="txt"><b>${PACKS.length} printable packs</b><small>Save as PDF from the print sheet</small></div>
+      <div class="arrow">\u203A</div>
+    </div>
+
     <h2 class="sec">Settings</h2>
     <div class="setting">
       <span>Dark mode</span>
@@ -620,7 +658,7 @@ function renderProfile() {
     </div>
     <div class="card" style="padding:14px;margin-top:6px">
       <div class="muted" style="font-size:12px;line-height:1.6">
-        <b style="color:var(--ink)">StudyMitra v1.1</b><br>
+        <b style="color:var(--ink)">StudyMitra v1.2</b><br>
         Offline study material app for SSC, Banking, Railway and State PSC aspirants.
         Content is curated static material \u2014 always cross-check with official notifications.
       </div>
@@ -683,15 +721,120 @@ function renderSearch() {
   window.scrollTo(0, 0);
 }
 
+
+/* ---------- PDF LIBRARY ---------- */
+function renderPDF() {
+  $("screen-pdf").innerHTML = `
+    <h2 class="sec">PDF packs &amp; downloads <span class="link">${PACKS.length} packs</span></h2>
+    <div class="muted" style="margin-bottom:12px">
+      Pack kholne ke baad <b>Save as PDF</b> dabayein \u2014 phone ke print sheet se PDF file ban jayegi,
+      bilkul offline. Us PDF ko WhatsApp ya email se share kar sakte hain.
+    </div>
+    <div class="list">
+      ${PACKS.map(p => `
+        <div class="item" onclick="openPack('${p.id}')">
+          <div class="badge" style="background:rgba(126,34,206,.12);color:#7E22CE">PDF</div>
+          <div class="txt"><b>${esc(p.title)}</b><small>${esc(p.desc)}</small></div>
+          <div class="arrow">\u203A</div>
+        </div>`).join("")}
+    </div>
+    <h2 class="sec">PYQ &amp; NSOU sets</h2>
+    <div class="list">
+      ${TESTS.filter(t => t.tag === "PYQ" || t.tag === "NSOU").map(t => `
+        <div class="item" onclick="startTest('${t.id}')">
+          <div class="badge">\uD83D\uDCDD</div>
+          <div class="txt"><b>${esc(t.title)}</b><small>${t.qcount} Q \u00B7 ${t.mins} min</small></div>
+          <div class="arrow">\u203A</div>
+        </div>`).join("")}
+    </div>
+    <div style="height:8px"></div>
+  `;
+}
+
+let currentPack = null;
+
+function openPack(id) {
+  currentPack = PACKS.filter(p => p.id === id)[0] || null;
+  if (!currentPack) return;
+  go("print");
+}
+
+function buildPackHTML(p) {
+  const letters = ["A", "B", "C", "D"];
+  let out = `<h1 style="font-size:22px;margin:0 0 4px">${esc(p.title)}</h1>
+    <div class="muted" style="margin-bottom:18px">${esc(p.desc)} \u00B7 StudyMitra</div>`;
+
+  (p.chapters || []).forEach(cid => {
+    const f = findChapter(cid);
+    if (!f) return;
+    out += `<h2 style="font-size:17px;margin:20px 0 6px">${esc(f.ch.title)}</h2>
+      <div class="muted" style="font-size:12px;margin-bottom:8px">${esc(f.sub.name)} \u00B7 ${f.ch.mins} min read</div>
+      <div class="notebody">${f.ch.body}</div>`;
+  });
+
+  (p.tests || []).forEach(tid => {
+    const t = findTest(tid);
+    if (!t) return;
+    out += `<h2 style="font-size:17px;margin:24px 0 4px">${esc(t.title)}</h2>
+      <div class="muted" style="font-size:12px;margin-bottom:10px">${t.qcount} questions \u00B7 ${t.mins} min \u00B7 ${t.neg ? "\u2212" + t.neg + " per wrong answer" : "no negative marking"}</div>`;
+    t.questions.forEach((q, i) => {
+      out += `<div style="margin-bottom:16px;page-break-inside:avoid">
+        <div style="font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:6px">Q${i + 1}. ${esc(q.q)}</div>
+        ${q.o.map((o, j) => `<div style="font-size:13px;color:${j === q.a ? "#0E9F6E" : "var(--ink-2)"};margin-bottom:3px">
+          <b>${letters[j]}.</b> ${esc(o)}${j === q.a ? "  \u2713" : ""}</div>`).join("")}
+        <div class="exp" style="margin-top:8px"><b>Explanation:</b> ${esc(q.e)}</div>
+      </div>`;
+    });
+  });
+
+  out += `<div class="divider"></div>
+    <div class="muted" style="font-size:11.5px">Generated by StudyMitra \u00B7 offline study material for NSOU, WBPSC, WB Police, Kolkata Police and other state exams. PYQ sets are previous-year pattern questions, not official question papers. Verify exam patterns and scheme figures with the official notification.</div>`;
+  return out;
+}
+
+function renderPrint() {
+  if (!currentPack) { go("pdf"); return; }
+  $("screen-print").innerHTML = `
+    <div class="noprint rowline" style="margin-bottom:12px">
+      <button class="btn btn-soft" onclick="go('pdf')">\u2039 Packs</button>
+      <button class="btn btn-primary" onclick="doPrint()">Save as PDF</button>
+    </div>
+    <div class="card" style="padding:16px">
+      ${buildPackHTML(currentPack)}
+    </div>
+    <div class="noprint" style="margin:14px 0">
+      <button class="btn btn-outline btn-block" onclick="doPrint()">Save as PDF / Print</button>
+      <div class="muted" style="text-align:center;margin-top:8px;font-size:11.5px">
+        Print dialog me destination \u2014 <b>Save as PDF</b> \u2014 chunein.
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  `;
+  window.scrollTo(0, 0);
+}
+
+function doPrint() {
+  try {
+    if (window.AndroidPrint && window.AndroidPrint.printPage) {
+      window.AndroidPrint.printPage();
+    } else {
+      window.print();
+    }
+  } catch (e) {
+    toast("Print not available on this device");
+  }
+}
+
 /* ---------- boot ---------- */
 function boot() {
-  let sp = $("screen-search");
-  if (!sp) {
-    sp = document.createElement("section");
-    sp.className = "screen";
-    sp.id = "screen-search";
-    $("main").appendChild(sp);
-  }
+  ["screen-search", "screen-pdf", "screen-print"].forEach(id => {
+    if (!$(id)) {
+      const sec = document.createElement("section");
+      sec.className = "screen";
+      sec.id = id;
+      $("main").appendChild(sec);
+    }
+  });
   document.body.classList.toggle("dark", !!S.dark);
   bumpStreak();
   $("streakNum").textContent = S.streak;
