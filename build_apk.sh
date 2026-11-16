@@ -20,9 +20,9 @@ $BT/aapt2 link \
   --manifest $APP/AndroidManifest.xml \
   -A $APP/assets \
   --min-sdk-version 21 \
-  --target-sdk-version 35 \
-  --version-code 1 \
-  --version-name 1.0 \
+  --target-sdk-version 34 \
+  --version-code 2 \
+  --version-name 1.1 \
   $BUILD/compiled/res.zip
 
 echo "== javac =="

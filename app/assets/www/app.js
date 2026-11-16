@@ -1,4 +1,15 @@
 /* ================= StudyMitra app logic ================= */
+/* ---------- visible error reporter (helps diagnose blank screens) ---------- */
+window.onerror = function (msg, src, line) {
+  try {
+    var b = document.createElement("div");
+    b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#E02424;color:#fff;" +
+      "font:12px/1.4 sans-serif;padding:8px 10px;white-space:pre-wrap";
+    b.textContent = "StudyMitra error: " + msg + " (line " + line + ")";
+    document.body.appendChild(b);
+  } catch (e) {}
+};
+
 
 const KEY = "studymitra_state_v1";
 const DEFAULT_STATE = {
@@ -609,7 +620,7 @@ function renderProfile() {
     </div>
     <div class="card" style="padding:14px;margin-top:6px">
       <div class="muted" style="font-size:12px;line-height:1.6">
-        <b style="color:var(--ink)">StudyMitra v1.0</b><br>
+        <b style="color:var(--ink)">StudyMitra v1.1</b><br>
         Offline study material app for SSC, Banking, Railway and State PSC aspirants.
         Content is curated static material \u2014 always cross-check with official notifications.
       </div>
